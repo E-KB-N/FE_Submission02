@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Freddie's Candy Shop | Dashboard</title>
+  </head>
+  <body class="dasboard">
+    <header>
+      <div class="circles">
+        <h2>Freddy's Dashboard</h2>
+      </div>
+    </header>
+    <!--SideBar-->
+
+    <div class="dashboard-container">
+      <div class="sidebar">
+        <div>
+          <div class="logo">
+            <img
+              src="assests/Freddys_Logo.svg"
+              alt="freddy's-logo"
+              class="company-logo"
+            />
+          </div>
+          <ul class="nav-links">
+            <li>
+              <a href="#" class="active">Dashboard</a>
+            </li>
+            <li>
+              <a href="order.html">Orders</a>
+            </li>
+            <li>
+              <a href="#" id="logout">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!--Dashboard Content-->
+      <section class="home-section">
+        <h2 class="title">Dashboard</h2>
+        <div class="dashboard-stats">
+          <div class="stats-box">
+            <h3>Today</h3>
+            <p class="info">
+              <span id="total-today"></span>
+              <span id="total-orders"></span>
+            </p>
+          </div>
+
+          <div class="stats-box">
+            <h3>Last Week</h3>
+            <span id="week-total"></span> /
+            <span id="week-orders"></span> orders
+          </div>
+
+          <div class="stats-box">
+            <h3>Last Month</h3>
+            <span id="month-total"></span> /
+            <span id="month-orders"></span> orders
+          </div>
+        </div>
+
+        <div class="revenue-section">
+          <h3>Revenue (Last 7 days)</h3>
+
+          <div id="btn">
+            <label class="switch">
+              <input type="checkbox" id="toggle-btn" />
+              <span class="slider round" id="toggle"></span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <canvas id="barChart"></canvas>
+        </div>
+
+        <p>Best Sellers</p>
+
+        <table>
+          <thead>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th># Units Sold</th>
+            <th>Revenue</th>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+
+    <script>
+      
+      getData();
+
+      //Get Info from the dashboard
+      async function getData() {
+        const result = await fetch("https://freddy.codesubmit.io/dashboard", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        });
+        const data = await result.json();
+        const sellers = data.dashboard.bestsellers;
+        console.log(data);
+
+        const newToken = async () => {
+          const res = await fetch("https://freddy.codesubmit.io/refresh", {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("refresh-token"),
+            },
+          });
+        };
+
+        if (data.msg === "Token has expired") {
+          const sessionRefreshed = await newToken();
+          if (sessionRefreshed) {
+            getData();
+          } else {
+            window.location.href = "index.html";
+          }
+        } else if (data.dashboard) {
+          const tableBody = document.getElementsByTagName("tbody")[0];
+
+          let tableRows = ``;
+
+          sellers.forEach((item) => {
+            tableRows += `
+            <tr>
+              <td>${item.product.name}</td>
+              <td>$${item.revenue / item.units}</td>
+              <td>${item.units}</td>
+              <td>$${item.revenue}</td>
+            </tr>`;
+          });
+          tableBody.innerHTML = tableRows;
+
+          const data_values_week = [];
+          for (const item in data.dashboard.sales_over_time_week) {
+            data_values_week.push(
+              data.dashboard.sales_over_time_week[item].total
+            );
+          }
+
+          const data_values_year = [];
+          for (const item in data.dashboard.sales_over_time_year) {
+            data_values_year.push(
+              data.dashboard.sales_over_time_year[item].total
+            );
+          }
+
+          const labels = [
+            "Today",
+            "Yesterday",
+            "Day 3",
+            "Day 4",
+            "Day 5",
+            "Day 6",
+            "Day 7",
+          ];
+
+          const data_set = {
+            labels: labels,
+            datasets: [
+              {
+                label: "Revenue (last 7 days)",
+                backgroundColor: "green",
+                data: data_values_week,
+              },
+            ],
+          };
+
+          const config = {
+            type: "bar",
+            data: data_set,
+            options: {},
+          };
+
+          const myChart = new Chart(
+            document.getElementById("barChart"),
+            config
+          );
+
+          //Changing the bar charts
+          const toggleDashboard = (event) => {
+            let showSecondChart = event.target.checked;
+            const chartTitle = document.getElementById("chart-title");
+            myChart.data.labels = showSecondChart
+              ? [
+                  "This Month",
+                  "Last Month",
+                  "Month 3",
+                  "Month 4",
+                  "Month 5",
+                  "Month 6",
+                  "Month 7",
+                  "Month 8",
+                  "Month 9",
+                  "Month 10",
+                  "Month 11",
+                  "Month 12",
+                ]
+              : [
+                  "Today",
+                  "Yesterday",
+                  "Day 3",
+                  "Day 4",
+                  "Day 5",
+                  "Day 6",
+                  "Day 7",
+                ];
+            myChart.data.datasets = [
+              {
+                label: showSecondChart
+                  ? "Revenue (last 12 months)"
+                  : "Revenue (last 7 days)",
+                backgroundColor: "green",
+                data: showSecondChart ? data_values_year : data_values_week,
+              },
+            ];
+            myChart.update();
+            chartTitle.textContent = showSecondChart
+              ? "Revenue (last 12 months)"
+              : "Revenue (last 7 days)";
+          };
+
+          const toggleBtn = document.getElementById("toggle-btn");
+
+          toggleBtn.addEventListener("change", toggleDashboard);
+        }
+      }
+
+      /*Log out */
+      const logout = () => {
+        sessionStorage.clear();
+        window.location.href = "index.html";
+      };
+
+      const logoutBtn = document.getElementById("logout");
+
+      logoutBtn.addEventListener("click", logout);
+    </script>
+  </body>
+</html>

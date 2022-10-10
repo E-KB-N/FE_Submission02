@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,500;1,700;1,800&display=swap');
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: #f7f7f7;
+  min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
+}
+
+ul,
+ol[role="list"] {
+  list-style: none;
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+img,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.sidebar {
+  position: fixed;
+  height: 100%;
+  width: 240px;
+  transition: all 0.5s ease;
+  border-right: 2px solid black;
+  padding: 2rem;
+}
+
+.company-logo {
+  width: 60px;
+}
+
+.order-section {
+  position: relative;
+  min-height: 100vh;
+  width: calc(100% - 240px);
+  left: 240px;
+  transition: all 0.5s ease;
+  padding: 2rem;
+}
+
+.order-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-input {
+  padding: 0.25rem 0.5rem;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.page-btns {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.process-text {
+  color: #e02020;
+}
+
+.delivered-text {
+  color: #20bd01;
+}
+
+.page-btn {
+  background-color: blue;
+  width: 80px;
+  height: 30px;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+}
+
+.page-btn:hover {
+  background-color: black;
+  color: white;
+}

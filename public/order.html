@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="order.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <title>Freddie's Candy Shop | Order</title>
+  </head>
+  <body>
+    <!--SideBar-->
+    <div class="sidebar">
+      <div class="logo">
+        <img
+          src="assests/Freddys_Logo.svg"
+          alt="freddy's-logo"
+          class="company-logo"
+        />
+      </div>
+      <ul class="nav-links">
+        <li>
+          <a href="dashboard.html" class="active">Dashboard</a>
+        </li>
+        <li>
+          <a href="order.html">Orders</a>
+        </li>
+        <li>
+          <a href="#" id="logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+
+    <section class="order-section">
+      <div class="order-nav">
+        <h2>Order</h2>
+
+        <div class="search-bar">
+          <i class="ri-search-2-line"></i>
+          <input
+            type="search"
+            id="myInput"
+            onkeyup="myFunction()"
+            class="search-input"
+          />
+        </div>
+      </div>
+
+      <table id="order-table">
+        <tr>
+          <th>Product Name</th>
+          <th>Date</th>
+          <th>Price</th>
+          <th>Status</th>
+        </tr>
+        <tbody id="table"></tbody>
+      </table>
+      <div id="pagination-wrapper" class="page-btns"></div>
+    </section>
+
+    <script>
+      getData();
+      async function getData() {
+        let headers = {};
+        var storage = localStorage.token;
+        if (localStorage.token) {
+          headers = { Authorization: `Bearer ${storage}` };
+        }
+        const response = await fetch("https://freddy.codesubmit.io/orders", {
+          headers: headers,
+        });
+        const data = await response.json();
+        console.log(data);
+        //Stores the bestsellers array here
+        if (data.msg === "Token has expired") {
+          const sessionRefreshed = await getNewToken();
+          if (sessionRefreshed) {
+            getOrdersInfo();
+          } else {
+            window.location.href = "./login.html";
+          }
+        }
+        const orders = data.orders;
+        var state = {
+          querySet: orders,
+          page: 1,
+          rows: 10,
+        };
+
+        table(orders);
+        function pagination(querySet, page, rows) {
+          var trimStart = (page - 1) * rows;
+          var trimEnd = trimStart + rows;
+
+          var trimmedData = querySet.slice(trimStart, trimEnd);
+          console.log(trimmedData);
+
+          var pages = Math.ceil(querySet.length / rows);
+
+          return {
+            querySet: trimmedData,
+            pages: pages,
+          };
+        }
+
+        function pageButtons(pages) {
+          var wrapper = document.getElementById("pagination-wrapper");
+          wrapper.innerHTML = "";
+          for (var page = 1; page <= pages; page++) {
+            wrapper.innerHTML += `<button value=${page} class="page-btn" id="page-btn">${page}</button>`;
+          }
+          
+        }
+
+        //table(orders);
+        function table() {
+          var table = document.getElementById("table");
+          var info = pagination(state.querySet, state.page, state.rows);
+          pageList = info.querySet;
+          console.log(info);
+          for (var i = 0; i < pageList.length; i++) {
+            var row = `<tr>
+                        <td>${pageList[i].product.name}</td>
+                        <td>${new Date(
+                          pageList[i].created_at
+                        ).toUTCString()}</td>
+                        <td>${pageList[i].customer.name}</td>
+                        <td class="${
+                          pageList[i].status === "processing"
+                            ? "process-text"
+                            : pageList[i].status === "delivered"
+                            ? "delivered-text"
+                            : ""
+                        }">${
+              pageList[i].status.charAt(0).toUpperCase() +
+              pageList[i].status.slice(1)
+            }</td>
+                       </tr>`;
+            table.innerHTML += row;
+          }
+          pageButtons(info.pages);
+        }
+      }
+
+      function myFunction() {
+        // Declare variables
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("myInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("order-table");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
+          td = tr[i].getElementsByTagName("td")[0];
+          if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.indexOf(filter) > -1) {
+              tr[i].style.display = "";
+            } else {
+              tr[i].style.display = "none";
+            }
+          }
+        }
+      }
+
+      const logout = () => {
+        sessionStorage.clear();
+        window.location.href = "index.html";
+      };
+
+      const logoutBtn = document.getElementById("logout");
+
+      logoutBtn.addEventListener("click", logout);
+    </script>
+  </body>
+</html>

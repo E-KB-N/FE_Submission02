@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Freddie's Candy Shop | Login</title>
+  </head>
+  <body>
+    <div class="form-container">
+      <div class="header">
+        <h1>Freddy's Artisanal Halloween Candy Shop</h1>
+        <img
+          src="assests/Freddys_Logo.svg"
+          alt="freddy's-logo"
+          class="company-logo"
+        />
+      </div>
+
+      <form  class="form" id="form" method="post">
+        <div class="form-control">
+          <label>Username</label>
+          <input type="text" placeholder="freddy" id="username" />
+        </div>
+
+        <div class="form-control">
+          <label>Password</label>
+          <input type="password" placeholder="Password" id="password" />
+        </div>
+
+        <button type="submit" id="submitBtn">Login</button>
+      </form>
+    </div>
+
+    <script>
+      var form = document.getElementById("form")
+
+      form.addEventListener("submit", function(e) {
+        e.preventDefault()
+        var username = document.getElementById("username").value
+        var password = document.getElementById("password").value
+
+        fetch("https://freddy.codesubmit.io/login", {
+          method: "POST",
+          body: JSON.stringify({
+            username: username,
+            password: password
+          }),
+          headers: {
+            "Content-Type": "application/json; charset=UTF-8"
+          } 
+        })
+        .then(res => res.json())
+        .then(function(data) {
+          localStorage.setItem("token", data.access_token)
+          localStorage.setItem("refresh-token", data.refresh_token)
+          console.log(data)
+        })
+        validate()
+      })
+
+      //Checks for the wrong creddentials
+      function validate () {
+        const userValue = username.value.trim();
+        const passwordValue = password.value.trim();
+
+        if(userValue === "freddy" && passwordValue === "ElmStreet2019") {
+          alert('Login Successfully')
+          window.location.href="dashboard.html";  
+        } else {
+          alert('Wrong Crendentials')
+        }
+      }
+
+      
+
+    </script>
+
+  </body>
+</html>
